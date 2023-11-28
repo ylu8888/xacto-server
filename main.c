@@ -9,17 +9,38 @@ static void terminate(int status);
 
 CLIENT_REGISTRY *client_registry;
 
+void sig_handler(int signum){
+   //implement it for when you catch a SIGHUP
+
+   //kill func to terminate
+}
+
 int main(int argc, char* argv[]){
     // Option processing should be performed here.
     // Option '-p <port>' is required in order to specify the port number
     // on which the server should listen.
-  int portNumber = 0;
 
-  // argv = [fileName, -p, <port> ]
-  if(argc >= 3 && strcmp(argv[1], "-p") == 0){
-    portNumber = atoi(argv[2]);
-  }
-
+  struct sigaction sigact;
+  sigact.sa_handler = sig_handler; //assign the signal handler
+  sigact.sa_flags = SA_RESTART;
+  sigaction(SIGHUP, &sa, NULL);
+	
+ if(sigaction(SIGCHLD, &sigact, NULL) == -1){ //IF ENCOUNTER AN ERROR
+ }
+	
+ int listenfd, *connfdp;
+ socklen_t clientlen;
+ struct sockaddr_storage clientaddr;
+ pthread_t tid;
+ listenfd = Open_listenfd(argv[2]); //arg2 to get the port number
+	
+ for(;;){ //infinite while loop 
+	clientlen=sizeof(struct sockaddr_storage);
+	connfdp = Malloc(sizeof(int));
+	*connfdp = Accept(listenfd,
+	 (SA *) &clientaddr, &clientlen);
+	Pthread_create(&tid, NULL, xacto_client_service, connfdp);
+ }
     // Perform required initializations of the client_registry,
     // transaction manager, and object store.
     client_registry = creg_init();

@@ -9,10 +9,14 @@ static void terminate(int status);
 
 CLIENT_REGISTRY *client_registry;
 
+int sig_atomic = 0;
+
 void sig_handler(int signum){
    //implement it for when you catch a SIGHUP
 
-   //kill func to terminate
+   //SIGKILL
+   //func to terminate
+  sig_atomic = 1;
 }
 
 int main(int argc, char* argv[]){

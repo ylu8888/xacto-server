@@ -8,6 +8,7 @@
 #include <string.h>
 #include <sys/types.h>     
 #include <sys/socket.h>
+#include <signal.h>
 #include "csapp.h"
 #include "server.h"
 
@@ -16,10 +17,18 @@ static void terminate(int status);
 
 CLIENT_REGISTRY *client_registry;
 
+static void sighup_handler(int signum){
+     terminate(EXIT_SUCCESS);
+}
+
 int main(int argc, char* argv[]){
     // Option processing should be performed here.
     // Option '-p <port>' is required in order to specify the port number
     // on which the server should listen.
+
+struct sigaction sigact;
+sigact.sa_handler = sighup_handler;
+sigaction(SIGHUP, &sa, NULL);
 
 int listenfd, *connfdp;
  socklen_t clientlen;

@@ -25,10 +25,16 @@ int main(int argc, char* argv[]){
     // Option processing should be performed here.
     // Option '-p <port>' is required in order to specify the port number
     // on which the server should listen.
+	
+    // Perform required initializations of the client_registry,
+    // transaction manager, and object store.
+    client_registry = creg_init();
+    trans_init();
+    store_init();
 
 struct sigaction sigact;
 sigact.sa_handler = sighup_handler;
-sigaction(SIGHUP, &sa, NULL);
+sigaction(SIGHUP, &sigact, NULL);
 
 int listenfd, *connfdp;
  socklen_t clientlen;
@@ -42,12 +48,6 @@ int listenfd, *connfdp;
     *connfdp = accept(listenfd,(SA *) &clientaddr, &clientlen);
     pthread_create(&tid, NULL, xacto_client_service, connfdp);
  }
-
-    // Perform required initializations of the client_registry,
-    // transaction manager, and object store.
-    client_registry = creg_init();
-    trans_init();
-    store_init();
 
     // TODO: Set up the server socket and enter a loop to accept connections
     // on this socket.  For each connection, a thread should be started to

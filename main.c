@@ -43,6 +43,7 @@ int main(int argc, char* argv[]){
 
 struct sigaction sigact;
 sigact.sa_handler = sighup_handler;
+sigemptyset(&sigact.sa_mask);
 sigact.sa_flags = SA_RESTART;
 if(sigaction(SIGHUP, &sigact, NULL) == -1){
     terminate(EXIT_FAILURE); //error case

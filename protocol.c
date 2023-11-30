@@ -1,20 +1,21 @@
 #include "protocol.h"
 #include "csapp.h"
+#include "debug.h"
 
 int proto_send_packet(int fd, XACTO_PACKET *pkt, void *data){
   //first convert the multi-byte fields in packet from normal host byte order to network byte order
-  pkt->serial = htonl(pkt->serial);
-  pkt->size = htonl(pkt->size);
-  pkt->timestamp_sec = htonl(pkt->timestamp_sec);
-  pkt->timestamp_nsec = htonl(pkt->timestamp_nsec); //htonl is host long to network
+  // pkt->serial = htonl(pkt->serial);
+  // pkt->size = htonl(pkt->size);
+  // pkt->timestamp_sec = htonl(pkt->timestamp_sec);
+  // pkt->timestamp_nsec = htonl(pkt->timestamp_nsec); //htonl is host long to network
    
   //then write the packet header to the network connection
-  int writeRez = rio_writen(fd, pkt, sizeof(*pkt));
+  int writeRez = rio_writen(fd, pkt, sizeof(XACTO_PACKET));
   if(writeRez < 0) return -1; //error handler
 
   //if length of header is not zero, call write again to write payload data to network connection
-  if(data != NULL && pkt->size != 0){
-    int writeRes = rio_writen(fd, data, pkt->size); 
+  if(data != NULL && ntohl(pkt->size) != 0){
+    int writeRes = rio_writen(fd, data, ntohl(pkt->size)); 
 
     if(writeRes < 0) return -1;
   }
@@ -23,7 +24,8 @@ int proto_send_packet(int fd, XACTO_PACKET *pkt, void *data){
 }
 
 int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
-  int readRez = rio_readn(fd, pkt, sizeof(*pkt));
+  debug("made it here");
+  int readRez = rio_readn(fd, pkt, sizeof(XACTO_PACKET));
   if(readRez < 0) return -1;
 
   //MAYBE UNCOMMENT THIS LATER

@@ -14,7 +14,7 @@ int proto_send_packet(int fd, XACTO_PACKET *pkt, void *data){
 
   //if length of header is not zero, call write again to write payload data to network connection
   if(data != NULL && pkt->size != 0){
-    int writeRes = write(fd, data, htonl(pkt->size)); 
+    int writeRes = write(fd, data, pkt->size); 
 
     if(writeRes < 0) return -1;
   }
@@ -31,13 +31,13 @@ int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
   int readRez = read(fd, pkt, sizeof(*pkt));
   if(readRez < 0) return -1;
 
- void *data = NULL; //initialize to read the payload data
+ void *datap = NULL; //initialize to read the payload data
 
   if(pkt->size != 0){
-    data = malloc(pkt->size); //only malloc if pktsize is not 0
-  if(data == NULL) return -1;
-    int readRes = read(fd, data, ntohl(pkt->size));
-    free(data);
+    datap = malloc(pkt->size); //only malloc if pktsize is not 0
+  if(datap == NULL) return -1;
+    int readRes = read(fd, datap, pkt->size);
+    free(datap);
     if(readRes < 0) return -1;
   }
 

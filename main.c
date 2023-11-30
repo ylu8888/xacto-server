@@ -24,8 +24,8 @@ static void sighup_handler(int signum){
 
 void *xacto_client_service(void *vargp){
  int connfd = *((int *)vargp);
- pthread_detach(pthread_self());
- free(vargp);
+ Pthread_detach(pthread_self());
+ Free(vargp);
  Close(connfd);
  return NULL;
 }
@@ -57,9 +57,9 @@ int listenfd, *connfdp;
 
  for(;;){ //infinite while loop
     clientlen = sizeof(struct sockaddr_storage);
-    connfdp = malloc(sizeof(int));
-    *connfdp = accept(listenfd,(SA *) &clientaddr, &clientlen);
-    pthread_create(&tid, NULL, xacto_client_service, connfdp);
+    connfdp = Malloc(sizeof(int));
+    *connfdp = Accept(listenfd,(SA *) &clientaddr, &clientlen);
+    Pthread_create(&tid, NULL, xacto_client_service, connfdp);
  }
 
     // TODO: Set up the server socket and enter a loop to accept connections

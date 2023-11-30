@@ -23,6 +23,10 @@ int proto_send_packet(int fd, XACTO_PACKET *pkt, void *data){
 }
 
 int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
+  pkt->serial = ntohl(pkt->serial);
+  pkt->size = ntohl(pkt->size);
+  pkt->timestamp_sec = ntohl(pkt->timestamp_sec);
+  pkt->timestamp_nsec = ntohl(pkt->timestamp_nsec); //nhtol is network to host long
 
   int readRez = read(fd, pkt, sizeof(*pkt));
   if(readRez < 0) return -1;
@@ -36,11 +40,6 @@ int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
     free(data);
     if(readRes < 0) return -1;
   }
-
-  pkt->serial = ntohl(pkt->serial);
-  pkt->size = ntohl(pkt->size);
-  pkt->timestamp_sec = ntohl(pkt->timestamp_sec);
-  pkt->timestamp_nsec = ntohl(pkt->timestamp_nsec); //nhtol is network to host long
 
   return 0;
   

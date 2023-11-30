@@ -11,6 +11,7 @@
 #include <signal.h>
 #include "csapp.h"
 #include "server.h"
+#include "protocol.h"
 
 
 static void terminate(int status);
@@ -21,11 +22,19 @@ static void sighup_handler(int signum){
      terminate(EXIT_SUCCESS);
 }
 
+void *xacto_client_service(void *vargp){
+ int connfd = *((int *)vargp);
+ pthread_detach(pthread_self());
+ free(vargp);
+ Close(connfd);
+ return NULL;
+}
+
 int main(int argc, char* argv[]){
     // Option processing should be performed here.
     // Option '-p <port>' is required in order to specify the port number
     // on which the server should listen.
-	
+    
     // Perform required initializations of the client_registry,
     // transaction manager, and object store.
     client_registry = creg_init();
@@ -34,7 +43,11 @@ int main(int argc, char* argv[]){
 
 struct sigaction sigact;
 sigact.sa_handler = sighup_handler;
-sigaction(SIGHUP, &sigact, NULL);
+sigact.sa_flags = SA_RESTART;
+if(sigaction(SIGHUP, &sigact, NULL) == -1){
+    terminate(EXIT_FAILURE); //error case
+}
+
 
 int listenfd, *connfdp;
  socklen_t clientlen;
@@ -56,7 +69,7 @@ int listenfd, *connfdp;
     // shutdown of the server.
 
     fprintf(stderr, "You have to finish implementing main() "
-	    "before the Xacto server will function.\n");
+        "before the Xacto server will function.\n");
 
     terminate(EXIT_FAILURE);
 }

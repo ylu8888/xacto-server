@@ -9,12 +9,12 @@ int proto_send_packet(int fd, XACTO_PACKET *pkt, void *data){
   pkt->timestamp_nsec = htonl(pkt->timestamp_nsec); //htonl is host long to network
    
   //then write the packet header to the network connection
-  int writeRez = write(fd, pkt, sizeof(*pkt));
+  int writeRez = rio_writen(fd, pkt, sizeof(*pkt));
   if(writeRez < 0) return -1; //error handler
 
   //if length of header is not zero, call write again to write payload data to network connection
   if(data != NULL && pkt->size != 0){
-    int writeRes = write(fd, data, pkt->size); 
+    int writeRes = rio_writen(fd, data, pkt->size); 
 
     if(writeRes < 0) return -1;
   }
@@ -23,15 +23,16 @@ int proto_send_packet(int fd, XACTO_PACKET *pkt, void *data){
 }
 
 int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
-  int readRez = rio_(fd, pkt, sizeof(*pkt));
+  int readRez = rio_readn(fd, pkt, sizeof(*pkt));
   if(readRez < 0) return -1;
 
- *datap = NULL; //initialize to read the payload data
+  //MAYBE UNCOMMENT THIS LATER
+// *datap = NULL; //initialize to read the payload data
 
   if(pkt->size != 0){
-    datap = malloc(pkt->size); //only malloc if pktsize is not 0
+    datap = Malloc(pkt->size); //only malloc if pktsize is not 0
   if(datap == NULL) return -1;
-    int readRes = read(fd, *datap, ntohl(pkt->size));
+    int readRes = rio_readn(fd, *datap, ntohl(pkt->size));
     free(datap);
     if(readRes < 0) return -1;
   }

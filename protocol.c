@@ -23,12 +23,7 @@ int proto_send_packet(int fd, XACTO_PACKET *pkt, void *data){
 }
 
 int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
-  pkt->serial = ntohl(pkt->serial);
-  pkt->size = ntohl(pkt->size);
-  pkt->timestamp_sec = ntohl(pkt->timestamp_sec);
-  pkt->timestamp_nsec = ntohl(pkt->timestamp_nsec); //nhtol is network to host long
-
-  int readRez = read(fd, pkt, sizeof(*pkt));
+  int readRez = rio_(fd, pkt, sizeof(*pkt));
   if(readRez < 0) return -1;
 
  *datap = NULL; //initialize to read the payload data
@@ -36,7 +31,7 @@ int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
   if(pkt->size != 0){
     datap = malloc(pkt->size); //only malloc if pktsize is not 0
   if(datap == NULL) return -1;
-    int readRes = read(fd, datap, pkt->size);
+    int readRes = read(fd, *datap, ntohl(pkt->size));
     free(datap);
     if(readRes < 0) return -1;
   }
@@ -44,3 +39,9 @@ int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
   return 0;
   
 }
+
+//bin/xacto -p 3000
+//util/client -p 3000
+//make clean debug;
+//short countgin
+//read returns num of bytes

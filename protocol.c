@@ -31,7 +31,7 @@ int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
   int readRez = read(fd, pkt, sizeof(*pkt));
   if(readRez < 0) return -1;
 
- void *datap = NULL; //initialize to read the payload data
+ *datap = NULL; //initialize to read the payload data
 
   if(pkt->size != 0){
     datap = malloc(pkt->size); //only malloc if pktsize is not 0

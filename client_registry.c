@@ -1,8 +1,15 @@
 #include "csapp.h"
-#include "client_registry.h"
 #include "semaphore.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include "client_registry.h"
 
 int max = 3000;
+
+typedef struct CLIENT_NODE {
+    int fd;
+    struct CLIENT_NODE* next;
+} CLIENT_NODE;
 
 typedef struct client_registry {
     sem_t mutex;
@@ -10,26 +17,21 @@ typedef struct client_registry {
 
 } CLIENT_REGISTRY;
 
-typedef struct client_node {
-    int fd;
-    struct CLIENT_NODE* next;
-} CLIENT_NODE;
-
 CLIENT_REGISTRY *creg_init(){
-  CLIENT_REGISTRY client = Malloc(sizeof(CLIENT_REGISTRY)); 
+  CLIENT_REGISTRY *client = malloc(sizeof(struct client_registry)); 
   if(client == NULL) return NULL; //error case
 
-  cr->clients = NULL; //initialize the fields of the client registry
-  sem_init(&cr->mutex, 0, 1);
+  client->clients = NULL; //initialize the fields of the client registry
+  sem_init(&client->mutex, 0, 1);
 
-  return cr;
+  return client;
 }
 
 void creg_fini(CLIENT_REGISTRY *cr){
   sem_destroy(&cr->mutex);
 
   CLIENT_NODE* curr = cr->clients; //current ptr points to linked list of client registry
-    while (current != NULL) { //loop thru the clients list and free each one
+    while (curr != NULL) { //loop thru the clients list and free each one
         CLIENT_NODE* next = curr->next; 
         free(curr);
         curr = next;
@@ -53,10 +55,10 @@ int creg_register(CLIENT_REGISTRY *cr, int fd){
     } 
     else{
         CLIENT_NODE* curr = cr->clients;
-        while(curr.next != NULL){ //need to do curr.next in order to actually append to end of link list
-            curr = curr.next;
+        while(curr->next != NULL){ //need to do curr.next in order to actually append to end of link list
+            curr = curr->next;
         }
-        curr.next = node;
+        curr->next = node;
     }
 
     sem_post(&cr->mutex);

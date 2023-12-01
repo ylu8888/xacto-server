@@ -22,6 +22,14 @@ static void sighup_handler(int signum){
      terminate(EXIT_SUCCESS);
 }
 
+void *xacto_client_service(void *vargp){
+ int connfd = *((int *)vargp);
+ Pthread_detach(pthread_self());
+ Free(vargp);
+ Close(connfd);
+ return NULL;
+}
+
 int main(int argc, char* argv[]){
     // Option processing should be performed here.
     // Option '-p <port>' is required in order to specify the port number
@@ -36,7 +44,7 @@ int main(int argc, char* argv[]){
 struct sigaction sigact;
 sigact.sa_handler = sighup_handler;
 sigemptyset(&sigact.sa_mask);
-//sigact.sa_flags = SA_RESTART;
+sigact.sa_flags = SA_RESTART;
 if(sigaction(SIGHUP, &sigact, NULL) == -1){
     terminate(EXIT_FAILURE); //error case
 }

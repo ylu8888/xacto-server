@@ -13,7 +13,6 @@
 #include "server.h"
 #include "protocol.h"
 
-
 static void terminate(int status);
 
 CLIENT_REGISTRY *client_registry;
@@ -41,10 +40,10 @@ int main(int argc, char* argv[]){
     trans_init();
     store_init();
 
-struct sigaction sigact;
+struct sigaction sigact = {0};
 sigact.sa_handler = sighup_handler;
 sigemptyset(&sigact.sa_mask);
-sigact.sa_flags = SA_RESTART;
+//sigact.sa_flags = SA_RESTART;
 if(sigaction(SIGHUP, &sigact, NULL) == -1){
     terminate(EXIT_FAILURE); //error case
 }

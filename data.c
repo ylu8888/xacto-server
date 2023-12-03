@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
 
 BLOB *blob_create(char *content, size_t size){
 	BLOB *blob = malloc(sizeof(BLOB));
@@ -14,7 +15,12 @@ BLOB *blob_create(char *content, size_t size){
 	blob->size = size;
 	blob->refcnt = 1; //reference count initially is 1
 
-	//Sem_init(&blob->mutex, 0, 1); //blob->mutex is of type pthread_mutex but sem_t expects type sem_t
+	int initRes = pthread_mutex_init(&blob->mutex, NULL); //initialize mutex
+	if(initRes != 0){ //error
+		free(blob->content);
+		free(blob);
+		return NULL;
+	}
 
 	return blob;
 

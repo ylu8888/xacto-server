@@ -58,23 +58,46 @@ int blob_hash(BLOB *bp){
 
 KEY *key_create(BLOB *bp){
 	KEY *key = malloc(sizeof(KEY));
+	if(key == NULL) return NULL;
+
+	key->blob = blob_ref(bp, "Key created from blob and inherits caller ref");
+	key->hash = blob_hash(bp);
 	return key;
 }
 
 void key_dispose(KEY *kp){
+	blob_unref(kp->blob, "Disposing a key");
+	free(kp);
 
 }
 
 int key_compare(KEY *kp1, KEY *kp2){
+	if(kp1->hash != kp2->hash) return -1;
+
+	int blobRes = blob_compare(kp1->blob, kp2->blob);
+
+	if(blobRes == -1) return -1;
 
 	return 0;
 }
 
 VERSION *version_create(TRANSACTION *tp, BLOB *bp){
 	VERSION *version = malloc(sizeof(VERSION));
+	if(version == NULL) return NULL;
+
+	version->creator = tp;
+	version->blob = blob_ref(bp, "Version created from this blob");
+	version->next = NULL;
+	version->prev = NULL;
+
+	trans_ref(tp, "Increase ref count of transaction after creating Version");
+
 	return version;
 }
 
 void version_dispose(VERSION *vp){
+	trans_unref(vp->creator, "Disposing a version");
+	blob_unref(vp->blob, "Disposing a version");
+	free(vp);
 
 }

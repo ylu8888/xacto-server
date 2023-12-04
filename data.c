@@ -27,17 +27,21 @@ BLOB *blob_create(char *content, size_t size){
 }
 
 BLOB *blob_ref(BLOB *bp, char *why){
+	pthread_mutex_lock(&bp->mutex);
 	bp->refcnt++;
+	pthread_mutex_unlock(&bp->mutex);
 
 	return bp;
 }
 
 void blob_unref(BLOB *bp, char *why){
+	pthread_mutex_lock(&bp->mutex);
 	bp->refcnt--;
 	if(bp->refcnt == 0){
 		free(bp->content);
 		free(bp);
 	}
+	pthread_mutex_unlock(&bp->mutex);
 
 }
 

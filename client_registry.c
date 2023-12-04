@@ -6,8 +6,6 @@
 #include "debug.h"
 #include "server.h"
 
-int max = 3000;
-
 typedef struct CLIENT_NODE {
     int fd;
     struct CLIENT_NODE* next;

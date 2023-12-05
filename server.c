@@ -5,6 +5,7 @@
 #include "protocol.h"
 #include "client_registry.h"
 #include "transaction.h"
+#include "store.h"
 
 extern CLIENT_REGISTRY *client_registry;
 
@@ -31,7 +32,7 @@ void *xacto_client_service(void *arg){
 	     void *datav = NULL;
 
 	     //this gets the serial num, stored in datap
-	     if(proto_recv_packet(connfd, &reqpkt, &datap) == -1){
+	     if(proto_recv_packet(connfd, reqpkt, &datap) == -1){
 		break; //error
 	     }
 
@@ -40,12 +41,12 @@ void *xacto_client_service(void *arg){
 	     if(reqpkt->type == XACTO_PUT_PKT){
 
 		    //this gets the KEY, stored in datak
-		     if(proto_recv_packet(connfd, &reqpkt, &datak) == -1){ 
+		     if(proto_recv_packet(connfd, reqpkt, &datak) == -1){ 
 			break; //error
 		     }
 
 		     //this gets the VALUE, stored in datav
-		     if(proto_recv_packet(connfd, &reqpkt, &datav) == -1){ 
+		     if(proto_recv_packet(connfd, reqpkt, &datav) == -1){ 
 			break; //error
 		     }
 
@@ -62,7 +63,7 @@ void *xacto_client_service(void *arg){
 		     reppkt->timestamp_nsec = 0;
 
 		     void* datas = NULL;
-		     if(proto_send_packet(connfd, &reppkt, datas) == -1){ //send after making REPLY packet
+		     if(proto_send_packet(connfd, reppkt, datas) == -1){ //send after making REPLY packet
 			break; //error
 		     }
 
@@ -76,7 +77,7 @@ void *xacto_client_service(void *arg){
 		     //XACTO_KEY_PKT
 
 		     //this gets the KEY, stored in datak
-		     if(proto_recv_packet(connfd, &reqpkt, &datak) == -1){ 
+		     if(proto_recv_packet(connfd, reqpkt, &datak) == -1){ 
 			break; //error
 		     }
 
@@ -95,7 +96,7 @@ void *xacto_client_service(void *arg){
 
 		    // void* datax = NULL;
 		     //we want to send in the VALUE from GET in the packet, which is stored in DATAV
-		     if(proto_send_packet(connfd, &reppkt, *datav) == -1){ //send after making REPLY packet
+		     if(proto_send_packet(connfd, reppkt, *datav) == -1){ //send after making REPLY packet
 			break; //error
 		     }
 
@@ -119,7 +120,7 @@ void *xacto_client_service(void *arg){
 	     reppkt->timestamp_nsec = 0;
 
 	     void* dataz = NULL;
-	     if(proto_send_packet(connfd, &reppkt, dataz) == -1){ //send after making REPLY packet
+	     if(proto_send_packet(connfd, reppkt, dataz) == -1){ //send after making REPLY packet
 		break; //error
 	     }
 
@@ -136,7 +137,7 @@ void *xacto_client_service(void *arg){
 
 	free(reqpkt);
 	creg_unregister(client_registry, 0);
-	trans_unref(tp, "Terminating client service thread");
+	trans_unref(trans, "Terminating client service thread");
 	
 	Close(connfd);
 	return NULL;

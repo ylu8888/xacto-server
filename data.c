@@ -58,11 +58,11 @@ int blob_compare(BLOB *bp1, BLOB *bp2){
 }
 
 int blob_hash(BLOB *bp){
-	int hashBrown = 7919; 
-	char* contentFrog = bp->content;
+	int hashBrown = 0;
+	char* contentFrog = bp->content; //content is string field of BLOB struct
 
-	while(*contentFrog){
-		hashBrown = ((hashBrown << 5) + hashBrown) + *contentFrog;
+	while(*contentFrog != '\0'){
+		hashBrown = (hashBrown * 31) + *contentFrog;
 		contentFrog++;
 
 	}

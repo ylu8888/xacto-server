@@ -50,6 +50,9 @@ void *xacto_client_service(void *arg){
 			break; //error
 		     }
 
+		     create blob with a size of recieved->size (ntohl) and key_store ptr
+		   key ptr = key create(just created blob)
+
 		     TRANS_STATUS tstat = store_put(trans, (KEY*) datak, (BLOB*) datav); //put a key/value mapping in store
 
 		     //use proto_send_pkt for REPLY after key and value

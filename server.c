@@ -6,6 +6,7 @@
 #include "client_registry.h"
 #include "transaction.h"
 #include "store.h"
+#include "debug.h"
 
 extern CLIENT_REGISTRY *client_registry;
 
@@ -27,9 +28,9 @@ void *xacto_client_service(void *arg){
 
 	for(;;){
 	     reqpkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //request packet
-	     void *datap = NULL;
-	     void *datak = NULL;
-	     void *datav = NULL;
+	     void *datap = NULL; //reads the SERIAL #
+	     void *datak = NULL; //reads the KEY
+	     void *datav = NULL; //reads the VALUE
 
 	     //this gets the serial num, stored in datap
 	     if(proto_recv_packet(connfd, reqpkt, &datap) == -1){
@@ -51,7 +52,7 @@ void *xacto_client_service(void *arg){
 		     }
 
 		  //   create blob with a size of recieved->size (ntohl) and key_store ptr
-		     BLOB* blobVal = (datak, ntohl(received->size));
+		     BLOB* blobVal = (datak, ntohl(reqpkt->size));
 		     KEY* tempKey = (blobVal);
 		  // key ptr = key create(just created blob)
 
@@ -62,7 +63,7 @@ void *xacto_client_service(void *arg){
 		     reppkt->type = XACTO_REPLY_PKT; //initialize the xacto packet struct for REPLY
 		     reppkt->status = tstat; //the output of STORE is a status, send that in as a reppkt->status
 		     reppkt->serial = serial; //serial number is gotten from the first read
-		     reppkt->null = 0;  //rest is 0
+		     reppkt->null = 1;  //rest is 0
 		     reppkt->size = 0;
 		     reppkt->timestamp_sec = 0;
 		     reppkt->timestamp_nsec = 0;
@@ -120,7 +121,7 @@ void *xacto_client_service(void *arg){
 	     reppkt->type = XACTO_REPLY_PKT; //initialize the xacto packet struct for REPLY
 	     reppkt->status = cstat; //the output of STORE is a status, send that in as a reppkt->status
 	     reppkt->serial = serial; //serial number is gotten from the first read
-	     reppkt->null = 0;  //rest is 0
+	     reppkt->null = 1;  //rest is 0
 	     reppkt->size = 0;
 	     reppkt->timestamp_sec = 0;
 	     reppkt->timestamp_nsec = 0;

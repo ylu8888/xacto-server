@@ -17,13 +17,15 @@ void *xacto_client_service(void *arg){
 
 	TRANSACTION *trans = trans_create();
 
+	XACTO_PACKET *reqpkt;
+
 	if(trans == NULL){
 	     Close(connfd);
 	     return NULL;
 	}
 
 	for(;;){
-	     XACTO_PACKET *reqpkt = malloc(sizeof(XACTO_PACKET)); //request packet
+	     reqpkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //request packet
 	     void *datap = NULL;
 	     void *datak = NULL;
 	     void *datav = NULL;
@@ -32,6 +34,8 @@ void *xacto_client_service(void *arg){
 	     if(proto_recv_packet(connfd, &reqpkt, &datap) == -1){
 		break; //error
 	     }
+
+	    uint32_t serial = ntohl(reqpkt->serial);
 
 	     if(reqpkt->type == XACTO_PUT_PKT){
 
@@ -51,7 +55,7 @@ void *xacto_client_service(void *arg){
 		     XACTO_PACKET *reppkt = malloc(sizeof(XACTO_PACKET)); //make a xacto packet with type reply
 		     reppkt->type = XACTO_REPLY_PKT; //initialize the xacto packet struct for REPLY
 		     reppkt->status = tstat; //the output of STORE is a status, send that in as a reppkt->status
-		     reppkt->serial = (ntohl)(uint32_t)datap; //serial number is gotten from the first read
+		     reppkt->serial = serial; //serial number is gotten from the first read
 		     reppkt->null = 0;  //rest is 0
 		     reppkt->size = 0;
 		     reppkt->timestamp_sec = 0;
@@ -60,6 +64,15 @@ void *xacto_client_service(void *arg){
 		     void* datas = NULL;
 		     if(proto_send_packet(connfd, &reppkt, datas) == -1){ //send after making REPLY packet
 			break; //error
+		     }
+
+		     if(tstat == TRANS_ABORTED){
+			trans_abort(trans); //effects of an aborted trans are removed from the 
+			break;
+		     }
+
+		     if(tstat == TRANS_COMMITTED){
+			break;
 		     }
 		    
 	     }
@@ -75,8 +88,6 @@ void *xacto_client_service(void *arg){
 		     
 	     }
 
-	     
-	     
 		
 	}
 

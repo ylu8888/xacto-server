@@ -111,3 +111,6 @@ void version_dispose(VERSION *vp){
 	free(vp);
 
 }
+
+//fuser (port #)/tcp
+//kill -SIGHUP 4761 

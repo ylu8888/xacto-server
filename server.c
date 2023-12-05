@@ -66,12 +66,8 @@ void *xacto_client_service(void *arg){
 			break; //error
 		     }
 
-		     if(tstat == TRANS_ABORTED){
+		     if(tstat == TRANS_ABORTED){ //if abort or commit, break but if pending, thats good!
 			trans_abort(trans); //effects of an aborted trans are removed from the 
-			break;
-		     }
-
-		     if(tstat == TRANS_COMMITTED){
 			break;
 		     }
 		    
@@ -79,13 +75,60 @@ void *xacto_client_service(void *arg){
 	     else if(reqpkt->type == XACTO_GET_PKT){
 		     //XACTO_KEY_PKT
 
+		     //this gets the KEY, stored in datak
+		     if(proto_recv_packet(connfd, &reqpkt, &datak) == -1){ 
+			break; //error
+		     }
+
+		     //the value from store_get is stored inside of datav, as per the third argument &datav.
+		     TRANS_STATUS gstat = store_get(trans, (KEY*) datak, (BLOB*) &datav); //put a key/value mapping in store
+
 		     //use proto_send_pkt for REPLY after key and value
+		     XACTO_PACKET *reppkt = malloc(sizeof(XACTO_PACKET)); //make a xacto packet with type reply
+		     reppkt->type = XACTO_REPLY_PKT; //initialize the xacto packet struct for REPLY
+		     reppkt->status = gstat; //the output of STORE is a status, send that in as a reppkt->status
+		     reppkt->serial = serial; //serial number is gotten from the first read
+		     reppkt->null = 0;  //rest is 0
+		     reppkt->size = 0;
+		     reppkt->timestamp_sec = 0;
+		     reppkt->timestamp_nsec = 0;
+
+		    // void* datax = NULL;
+		     //we want to send in the VALUE from GET in the packet, which is stored in DATAV
+		     if(proto_send_packet(connfd, &reppkt, *datav) == -1){ //send after making REPLY packet
+			break; //error
+		     }
+
+		     if(gstat == TRANS_ABORTED){ //if abort or commit, break but if pending, thats good!
+			trans_abort(trans); //effects of an aborted trans are removed from the 
+			break;
+		     }
 		     
 		   
 	     }
 	     else if(reqpkt->type == XACTO_COMMIT_PKT){
+		TRANS_STATUS cstat = trans_commit(trans);
 
-		     
+	     XACTO_PACKET *reppkt = malloc(sizeof(XACTO_PACKET)); //make a xacto packet with type reply
+	     reppkt->type = XACTO_REPLY_PKT; //initialize the xacto packet struct for REPLY
+	     reppkt->status = cstat; //the output of STORE is a status, send that in as a reppkt->status
+	     reppkt->serial = serial; //serial number is gotten from the first read
+	     reppkt->null = 0;  //rest is 0
+	     reppkt->size = 0;
+	     reppkt->timestamp_sec = 0;
+	     reppkt->timestamp_nsec = 0;
+
+	     void* dataz = NULL;
+	     if(proto_send_packet(connfd, &reppkt, dataz) == -1){ //send after making REPLY packet
+		break; //error
+	     }
+
+		if(cstat == TRANS_ABORTED){
+		   trans_abort(trans); //effects of an aborted trans are removed from the 
+		   break;
+		}
+
+		break; //once we commit, we're done we want to break out of the infinite while loop
 	     }
 
 		

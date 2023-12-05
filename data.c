@@ -15,6 +15,7 @@ BLOB *blob_create(char *content, size_t size){
 	
 	blob->size = size;
 	blob->refcnt = 1; //reference count initially is 1
+	blob->prefix = content;
 
 	int initRes = pthread_mutex_init(&blob->mutex, NULL); //initialize mutex
 	if(initRes != 0){ //error

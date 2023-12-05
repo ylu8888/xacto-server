@@ -36,7 +36,7 @@ void *xacto_client_service(void *arg){
 		break; //error
 	     }
 
-	    uint32_t serial = ntohl(reqpkt->serial);
+	    uint32_t serial = reqpkt->serial;
 
 	     if(reqpkt->type == XACTO_PUT_PKT){
 
@@ -50,10 +50,12 @@ void *xacto_client_service(void *arg){
 			break; //error
 		     }
 
-		     create blob with a size of recieved->size (ntohl) and key_store ptr
-		   key ptr = key create(just created blob)
+		  //   create blob with a size of recieved->size (ntohl) and key_store ptr
+		     BLOB* blobVal = (datak, ntohl(received->size));
+		     KEY* tempKey = (blobVal);
+		  // key ptr = key create(just created blob)
 
-		     TRANS_STATUS tstat = store_put(trans, (KEY*) datak, (BLOB*) datav); //put a key/value mapping in store
+		     TRANS_STATUS tstat = store_put(trans, tempKey, blobVal); //put a key/value mapping in store
 
 		     //use proto_send_pkt for REPLY after key and value
 		     XACTO_PACKET *reppkt = malloc(sizeof(XACTO_PACKET)); //make a xacto packet with type reply

@@ -38,10 +38,13 @@ void blob_unref(BLOB *bp, char *why){
 	pthread_mutex_lock(&bp->mutex);
 	bp->refcnt--;
 	if(bp->refcnt == 0){
+		pthread_mutex_unlock(&bp->mutex);
 		free(bp->content);
 		free(bp);
+	} else{
+		pthread_mutex_unlock(&bp->mutex);
 	}
-	pthread_mutex_unlock(&bp->mutex);
+	
 
 }
 

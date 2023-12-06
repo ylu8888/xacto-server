@@ -9,7 +9,6 @@ BLOB *blob_create(char *content, size_t size){
 	BLOB *blob = malloc(sizeof(BLOB));
 	if(blob == NULL) return NULL;
 
-
 	//blob->content = strdup(content);//allocate the size of the content
 	blob->content = malloc(size);
 	blob->content = memcpy(blob->content, content, size);
@@ -18,11 +17,14 @@ BLOB *blob_create(char *content, size_t size){
 	
 	blob->size = size;
 	blob->refcnt = 1; //reference count initially is 1
-	blob->prefix = content;
+
+	blob->prefix = malloc(size);
+	blob->prefix = memcpy(blob->prefix, content, size/2);
 
 	int initRes = pthread_mutex_init(&blob->mutex, NULL); //initialize mutex
 	if(initRes != 0){ //error
 		free(blob->content);
+		free(blob->prefix);
 		free(blob);
 		return NULL;
 	}
@@ -48,6 +50,7 @@ void blob_unref(BLOB *bp, char *why){
 		if(bp->refcnt == 0){
 			pthread_mutex_unlock(&bp->mutex);
 			free(bp->content);
+			free(bp->prefix);
 			free(bp);
 		} else{
 			pthread_mutex_unlock(&bp->mutex);

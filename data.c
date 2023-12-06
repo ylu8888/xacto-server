@@ -9,7 +9,10 @@ BLOB *blob_create(char *content, size_t size){
 	BLOB *blob = malloc(sizeof(BLOB));
 	if(blob == NULL) return NULL;
 
-	blob->content = strdup(content);//allocate the size of the content
+
+	//blob->content = strdup(content);//allocate the size of the content
+	blob->content = malloc(size);
+	blob->content = memcpy(blob->content, content, size);
 	
 	if(blob->content == NULL) return NULL;
 	
@@ -29,22 +32,26 @@ BLOB *blob_create(char *content, size_t size){
 }
 
 BLOB *blob_ref(BLOB *bp, char *why){
-	pthread_mutex_lock(&bp->mutex);
-	bp->refcnt++;
-	pthread_mutex_unlock(&bp->mutex);
+	if(bp != NULL){
+		pthread_mutex_lock(&bp->mutex);
+		bp->refcnt++;
+		pthread_mutex_unlock(&bp->mutex);
+	}
 
 	return bp;
 }
 
 void blob_unref(BLOB *bp, char *why){
-	pthread_mutex_lock(&bp->mutex);
-	bp->refcnt--;
-	if(bp->refcnt == 0){
-		pthread_mutex_unlock(&bp->mutex);
-		free(bp->content);
-		free(bp);
-	} else{
-		pthread_mutex_unlock(&bp->mutex);
+	if(bp != NULL){
+		pthread_mutex_lock(&bp->mutex);
+		bp->refcnt--;
+		if(bp->refcnt == 0){
+			pthread_mutex_unlock(&bp->mutex);
+			free(bp->content);
+			free(bp);
+		} else{
+			pthread_mutex_unlock(&bp->mutex);
+		}
 	}
 	
 

@@ -73,30 +73,26 @@ void *xacto_client_service(void *arg){
 			break;
 		     }
 
-		     //trans_commit(trans);
+		     Free(blobVal);
+		     Free(blobVal2);
+		     Free(tempKey);
 
 	     }
 	     else if(reqpkt->type == XACTO_GET_PKT){
 		     //this gets the KEY, stored in datak
 		     if(proto_recv_packet(connfd, reqpkt, &datak) == -1) break; //error
 		
-		     BLOB* valBlob; //stores the VALUE
+		     BLOB* valBlob = NULL; //stores the VALUE
 
 		     //blobVal is a BLOB for getting the KEY
 		     //valBlob is a BLOB for getting the VALUE
 		     BLOB* blobVal = blob_create(datak, ntohl(reqpkt->size)); //blob with keyptr 
 		     KEY* tempKey = key_create(blobVal); //creating a key
 		     
-		     debug("before storeget");
-		     debug("%s", tempKey->blob->content);
 		     //the value from store_get is stored inside of datav, as per the third argument &datav.
 		     TRANS_STATUS gstat = store_get(trans, tempKey, &valBlob); //put a key/value mapping in store
 
-		     debug("after storeget");
-		     debug("%s", valBlob->content);
-		     debug("%zu", sizeof(*valBlob));
-
-		     //BLOB* newVal = blob_create(valBlob->content, sizeof(*valBlob));
+		     BLOB* newVal = blob_create(valBlob->content, sizeof(*valBlob));
 		     
 		     //use proto_send_pkt for REPLY after key and value
 		     //make a xacto packet with type reply
@@ -129,16 +125,17 @@ void *xacto_client_service(void *arg){
 		     if(proto_send_packet(connfd, reppkt, datax) == -1) break;
 		      //send after making REPLY packet
 			
-		     //  if(proto_send_packet(connfd, datapkt, valBlob->content) == -1)
-		     if(proto_send_packet(connfd, datapkt, valBlob->content) == -1) break; //send after making REPLY packet
+		     if(proto_send_packet(connfd, datapkt, newVal) == -1) break; //send after making REPLY packet
 			
 
 		     if(gstat == TRANS_ABORTED){ //if abort or commit, break but if pending, thats good!
 			trans_abort(trans); //effects of an aborted trans are removed from the 
 			break;
 		     }
-		     
-		   
+
+		     Free(blobVal);
+		     Free(tempKey);
+		     Free(valBlob);
 	     }
 	     else if(reqpkt->type == XACTO_COMMIT_PKT){
 	     TRANS_STATUS cstat = trans_commit(trans);
@@ -164,7 +161,6 @@ void *xacto_client_service(void *arg){
 
 		break; //once we commit, we're done we want to break out of the infinite while loop
 	     }
-
 		
 	}
 

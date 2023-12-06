@@ -19,9 +19,7 @@ void *xacto_client_service(void *arg){
 
 	TRANSACTION *trans = trans_create();
 
-	XACTO_PACKET *reqpkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //request packet
-	XACTO_PACKET *reppkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //reply packet
-	XACTO_PACKET *datapkt =  (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //data packet
+	
 
 	if(trans == NULL){
 	     Close(connfd);
@@ -29,21 +27,25 @@ void *xacto_client_service(void *arg){
 	}
 
 	for(;;){
+
+		XACTO_PACKET *reqpkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //request packet
+		XACTO_PACKET *reppkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //reply packet
+		XACTO_PACKET *datapkt =  (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //data packet
 	     
 	     void *datap = NULL; //reads the SERIAL #
 	     void *datak = NULL; //reads the KEY
 	     void *datav = NULL; //reads the VALUE
 
 	     //this gets the serial num, stored in datap
-	     if(proto_recv_packet(connfd, reqpkt, &datap) == -1) break;
+	     proto_recv_packet(connfd, reqpkt, &datap);
 	     
 	     if(reqpkt->type == XACTO_PUT_PKT){
 
 		    //this gets the KEY, stored in datak
-		     if(proto_recv_packet(connfd, reqpkt, &datak) == -1) break;
+		     proto_recv_packet(connfd, reqpkt, &datak);
 
 		     //this gets the VALUE, stored in datav
-		     if(proto_recv_packet(connfd, reqpkt, &datav) == -1) break;
+		     proto_recv_packet(connfd, reqpkt, &datav);
 
 		  // create blob with a size(ntohl) and key store ptr
 		     BLOB* blobVal = blob_create(datak, ntohl(reqpkt->size));
@@ -66,21 +68,25 @@ void *xacto_client_service(void *arg){
 		     reppkt->timestamp_nsec = 0;
 
 		     void* datas = NULL;
-		     if(proto_send_packet(connfd, reppkt, datas) == -1) break; //send after making REPLY packet
+		     proto_send_packet(connfd, reppkt, datas); //send after making REPLY packet
 
 		     if(tstat == TRANS_ABORTED){ //if abort or commit, break but if pending, thats good!
 			trans_abort(trans); //effects of an aborted trans are removed from the 
 			break;
 		     }
 
-		     Free(blobVal);
-		     Free(blobVal2);
-		     Free(tempKey);
+		     Free(datap);
+		     Free(datak);
+		     Free(datav);
+
+		     // Free(blobVal);
+		     // Free(tempKey);
+		     // Free(blobVal2);
 
 	     }
 	     else if(reqpkt->type == XACTO_GET_PKT){
 		     //this gets the KEY, stored in datak
-		     if(proto_recv_packet(connfd, reqpkt, &datak) == -1) break; //error
+		     proto_recv_packet(connfd, reqpkt, &datak);//error
 		
 		     BLOB* valBlob = NULL; //stores the VALUE
 
@@ -89,10 +95,25 @@ void *xacto_client_service(void *arg){
 		     BLOB* blobVal = blob_create(datak, ntohl(reqpkt->size)); //blob with keyptr 
 		     KEY* tempKey = key_create(blobVal); //creating a key
 		     
+		     debug("before storeget");
+		     debug("%s", tempKey->blob->content);
 		     //the value from store_get is stored inside of datav, as per the third argument &datav.
 		     TRANS_STATUS gstat = store_get(trans, tempKey, &valBlob); //put a key/value mapping in store
 
+		     debug("after storeget");
+		     
+		     if(valBlob == NULL){
+		     	debug("I AM NULLLL");
+		     	break;
+		     } else{
+		     	debug("I AM NOT NULLLL");
+		     	debug("%s", valBlob->content);
+		       debug("%zu", sizeof(*valBlob));
+		     }
+
 		     BLOB* newVal = blob_create(valBlob->content, sizeof(*valBlob));
+
+		     //debug("makking it here??");
 		     
 		     //use proto_send_pkt for REPLY after key and value
 		     //make a xacto packet with type reply
@@ -111,21 +132,30 @@ void *xacto_client_service(void *arg){
 		     datapkt->serial = reqpkt->serial;
 		     if(valBlob->content == NULL){
 			datapkt->null = 1;
+			datapkt->size = 0;
 		     } else{
 			datapkt->null = 0;
+			datapkt->size = sizeof(*valBlob);
 		     }
-		     datapkt->size = sizeof(*valBlob);
+		     
 		     datapkt->timestamp_sec = 0;
 		     datapkt->timestamp_nsec = 0;
 		     
 		    //WE SEND IN TWO PACKETS: REPLY AND DATA PCKET
 		     //for the third argument void* data: send in NULL for the reply and value Blob for the data
-		     void* datax = NULL;
+		   //  void* datax = NULL;
 		     //we want to send in the VALUE from GET in the packet, which is stored in DATAV
-		     if(proto_send_packet(connfd, reppkt, datax) == -1) break;
+
+		     //if(proto_send_packet(connfd, reppkt, NULL) == -1) break;
 		      //send after making REPLY packet
+
+		     proto_send_packet(connfd, reppkt, NULL);
+		     
 			
-		     if(proto_send_packet(connfd, datapkt, newVal) == -1) break; //send after making REPLY packet
+		     //  if(proto_send_packet(connfd, datapkt, valBlob->content) == -1)
+		     proto_send_packet(connfd, datapkt, newVal->content); //send after making REPLY packet
+
+		    // debug("DAMMM I MADE IT FAR");
 			
 
 		     if(gstat == TRANS_ABORTED){ //if abort or commit, break but if pending, thats good!
@@ -133,9 +163,18 @@ void *xacto_client_service(void *arg){
 			break;
 		     }
 
-		     Free(blobVal);
-		     Free(tempKey);
-		     Free(valBlob);
+		     debug("ITS OVERRRR");
+
+		     Free(datap);
+		     Free(datak);
+		     Free(datav);
+		    
+		     // Free(valBlob);
+		     // Free(blobVal);
+		     // Free(tempKey);
+		     // Free(newVal);
+		     
+		   
 	     }
 	     else if(reqpkt->type == XACTO_COMMIT_PKT){
 	     TRANS_STATUS cstat = trans_commit(trans);
@@ -159,14 +198,16 @@ void *xacto_client_service(void *arg){
 		   break;
 		}
 
+		Free(reqpkt);
+		Free(datapkt);
+		Free(reppkt);
+
 		break; //once we commit, we're done we want to break out of the infinite while loop
 	     }
+
 		
 	}
 
-	Free(reqpkt);
-	Free(datapkt);
-	Free(reppkt);
 	creg_unregister(client_registry, connfd);
 	trans_unref(trans, "Terminating client service thread");
 	

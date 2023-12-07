@@ -30,9 +30,9 @@ void *xacto_client_service(void *arg){
 		XACTO_PACKET *reppkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //reply packet
 		XACTO_PACKET *datapkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //data packet
 
-		// memset(reqpkt, 0, sizeof(XACTO_PACKET));
-		// memset(reppkt, 0, sizeof(XACTO_PACKET));
-		// memset(datapkt, 0, sizeof(XACTO_PACKET));
+		memset(reqpkt, 0, sizeof(XACTO_PACKET));
+		memset(reppkt, 0, sizeof(XACTO_PACKET));
+		memset(datapkt, 0, sizeof(XACTO_PACKET));
 	     
 	     void *datap = NULL; //reads the SERIAL #
 	     void *datak = NULL; //reads the KEY
@@ -76,8 +76,8 @@ void *xacto_client_service(void *arg){
 			break;
 		     }
 		     
-		     // key_dispose(tempKey);
-		     // blob_unref(blobVal2);
+		     key_dispose(tempKey);
+		     blob_unref(blobVal2);
 
 	     }
 	     else if(reqpkt->type == XACTO_GET_PKT){
@@ -151,8 +151,8 @@ void *xacto_client_service(void *arg){
 		     }
 
 		     debug("ITS OVERRRR");
-		     // key_dispose(tempKey);
-		     // blob_unref(newVal);
+		     key_dispose(tempKey);
+		     blob_unref(newVal);
 		     
 		   
 	     }
@@ -182,9 +182,9 @@ void *xacto_client_service(void *arg){
 	     }
 
 		//this is the end of the while loop
-		// Free(reqpkt);
-		// Free(datapkt);
-		// Free(reppkt);
+		Free(reqpkt);
+		Free(datapkt);
+		Free(reppkt);
 	}
 
 	creg_unregister(client_registry, connfd);

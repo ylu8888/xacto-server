@@ -34,9 +34,9 @@ void *xacto_client_service(void *arg){
 		memset(reppkt, 0, sizeof(XACTO_PACKET));
 		memset(datapkt, 0, sizeof(XACTO_PACKET));
 	     
-	     void *datap = NULL; //reads the SERIAL #
-	     void *datak = NULL; //reads the KEY
-	     void *datav = NULL; //reads the VALUE
+	     void *datap; //reads the SERIAL #
+	     void *datak; //reads the KEY
+	     void *datav; //reads the VALUE
 
 	     //this gets the serial num, stored in datap
 	     proto_recv_packet(connfd, reqpkt, &datap);

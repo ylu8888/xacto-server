@@ -89,7 +89,7 @@ void *xacto_client_service(void *arg){
 		     debug("before storeget");
 		     debug("%s", tempKey->blob->content);
 		     
-		     BLOB* valBlob = NULL; //valBlob is a BLOB for getting the VALUE
+		     BLOB* valBlob; //valBlob is a BLOB for getting the VALUE
 		     TRANS_STATUS gstat = store_get(trans, tempKey, &valBlob);  //the value from store_get is stored inside of valBlob
 		     
 		     debug("after storeget");

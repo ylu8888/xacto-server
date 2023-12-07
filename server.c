@@ -76,8 +76,8 @@ void *xacto_client_service(void *arg){
 			break;
 		     }
 		     
-		     key_dispose(tempKey);
-		     blob_unref(blobVal2, "DISPOSAL OF BLOB");
+		     // key_dispose(tempKey);
+		     // blob_unref(blobVal2, "DISPOSAL OF BLOB");
 
 	     }
 	     else if(reqpkt->type == XACTO_GET_PKT){
@@ -150,9 +150,9 @@ void *xacto_client_service(void *arg){
 			break;
 		     }
 
-		     debug("ITS OVERRRR");
-		     key_dispose(tempKey);
-		     blob_unref(newVal, "DISPOSAL OF BLOB");
+		     // debug("ITS OVERRRR");
+		     // key_dispose(tempKey);
+		     // blob_unref(newVal, "DISPOSAL OF BLOB");
 		     
 		   
 	     }

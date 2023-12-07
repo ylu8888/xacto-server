@@ -10,10 +10,10 @@ BLOB *blob_create(char *content, size_t size){
 	if(blob == NULL) return NULL;
 
 	//blob->content = strdup(content);//allocate the size of the content
-	blob->content = malloc(size);
-	blob->content = memcpy(blob->content, content, size);
-	
+	blob->content = malloc(size + 1);
 	if(blob->content == NULL) return NULL;
+	blob->content = memcpy(blob->content, content, size);
+	blob->content[size] = '\0';
 	
 	blob->size = size;
 	blob->refcnt = 1; //reference count initially is 1

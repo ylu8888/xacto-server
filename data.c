@@ -111,7 +111,8 @@ VERSION *version_create(TRANSACTION *tp, BLOB *bp){
 	if(version == NULL) return NULL;
 
 	version->creator = tp;
-	version->blob = blob_ref(bp, "Version created from this blob");
+	//version->blob = blob_ref(bp, "Version created from this blob");
+	version->blob = bp;
 	version->next = NULL;
 	version->prev = NULL;
 

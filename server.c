@@ -10,6 +10,14 @@
 
 CLIENT_REGISTRY *client_registry;
 
+// void *xacto_client_service(void *arg){
+//  int connfd = *((int *)arg);
+//  Pthread_detach(pthread_self());
+//  Free(arg);
+//  Close(connfd);
+//  return NULL;
+// }
+
 void *xacto_client_service(void *arg){
 	int connfd = *((int *)arg);
 	Pthread_detach(pthread_self());

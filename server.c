@@ -90,13 +90,16 @@ void *xacto_client_service(void *arg){
 			trans_abort(trans); //effects of an aborted trans are removed from the 
 			break;
 		     }
-		     
 		      //key_dispose(tempKey);
 		      //blob_unref(blobVal2, "DISPOSAL OF BLOB");
-
+		        Free(reqpkt);
+			Free(reppkt);
+			Free(datap);
+			Free(datak);
+			Free(datav);
 	     }
 	     else if(reqpkt->type == XACTO_GET_PKT){
-		     if(proto_recv_packet(connfd, reqpkt, &datak) == -1)break;   //this gets the KEY, stored in datak
+		     if(proto_recv_packet(connfd, reqpkt, &datak) == -1) break;   //this gets the KEY, stored in datak
 		     
 		     BLOB* blobVal = blob_create(datak, ntohl(reqpkt->size)); //blobVal is a BLOB for getting the KEY
 		     KEY* tempKey = key_create(blobVal); //creating a key
@@ -148,6 +151,11 @@ void *xacto_client_service(void *arg){
 		     }
 		      //key_dispose(tempKey);
 		     // blob_unref(newVal, "DISPOSAL OF BLOB");
+		    Free(reqpkt);
+	            Free(reppkt);
+		    Free(datapkt);
+		    Free(datap);
+		    Free(datak);
 		     
 	     }
 	     else if(reqpkt->type == XACTO_COMMIT_PKT){
@@ -171,17 +179,13 @@ void *xacto_client_service(void *arg){
 		   break;
 		}
 
-
 		break; //once we commit, we're done we want to break out of the infinite while loop
 	     }
 
 		//this is the end of the while loop
 		Free(reqpkt);
-		Free(datapkt);
 		Free(reppkt);
 		Free(datap);
-		Free(datak);
-		Free(datav);
 
 	}
 

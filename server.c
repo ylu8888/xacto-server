@@ -53,10 +53,6 @@ void *xacto_client_service(void *arg){
 		memset(reppkt, 0, sizeof(XACTO_PACKET));
 		memset(datapkt, 0, sizeof(XACTO_PACKET));
 
-		// XACTO_PACKET *reqpkt = Calloc(1, sizeof(XACTO_PACKET)); //request packet
-		// XACTO_PACKET *reppkt = Calloc(1, sizeof(XACTO_PACKET)); //reply packet
-		// XACTO_PACKET *datapkt = Calloc(1, sizeof(XACTO_PACKET)); //data packet
-
 	     datap = NULL; //reads the SERIAL #
 	     datak = NULL; //reads the KEY
 	     datav = NULL; //reads the VALUE
@@ -71,12 +67,11 @@ void *xacto_client_service(void *arg){
 		     //this gets the VALUE, stored in datav
 		     if(proto_recv_packet(connfd, reqpkt, &datav) == -1) break;
 
-		  // create blob with a size(ntohl) and key store ptr
+		   // create blob with a size(ntohl) and datak ptr
 		     BLOB* blobVal = blob_create(datak, ntohl(reqpkt->size));
 		     KEY* tempKey = key_create(blobVal);
-		  // key ptr = key create(just created blob)
-
-		     //CREATE another blob with the value store ptr
+		 
+		     //CREATE another blob with the datav ptr
 		     BLOB* blobVal2 = blob_create(datav, ntohl(reqpkt->size)); //BLOBVAL2 IS FOR THE VALUE
 
 		     TRANS_STATUS tstat = store_put(trans, tempKey, blobVal2); //put a key/value mapping in store
@@ -91,20 +86,13 @@ void *xacto_client_service(void *arg){
 		     reppkt->timestamp_sec = 0;
 		     reppkt->timestamp_nsec = 0;
 
-		     //void* datas = NULL;
 		     if(proto_send_packet(connfd, reppkt, NULL) == -1) break; //send after making REPLY packet
 
 		     if(tstat == TRANS_ABORTED){ //if abort or commit, break but if pending, thats good!
 			trans_abort(trans); //effects of an aborted trans are removed from the 
 			break;
 		     }
-		      //key_dispose(tempKey);
-		      //blob_unref(blobVal2, "DISPOSAL OF BLOB");
-		        // Free(reqpkt);
-			// Free(reppkt);
-			// Free(datap);
-			// Free(datak);
-			// Free(datav);
+		     
 	     }
 	     else if(reqpkt->type == XACTO_GET_PKT){
 		     if(proto_recv_packet(connfd, reqpkt, &datak) == -1) break;   //this gets the KEY, stored in datak
@@ -128,7 +116,6 @@ void *xacto_client_service(void *arg){
 		     reppkt->timestamp_nsec = 0;
 
 		     //THIS IS THE DATA PACKET, ABOVE IS THE REPLY PACKET
-
 		     datapkt->type = XACTO_VALUE_PKT;
 		     datapkt->status = gstat; 
 		     datapkt->serial = reqpkt->serial;
@@ -157,13 +144,6 @@ void *xacto_client_service(void *arg){
 			trans_abort(trans); //effects of an aborted trans are removed from the 
 			break;
 		     }
-		      //key_dispose(tempKey);
-		     // blob_unref(newVal, "DISPOSAL OF BLOB");
-		    // Free(reqpkt);
-	            // Free(reppkt);
-		    // Free(datapkt);
-		    // Free(datap);
-		    // Free(datak);
 		     
 	     }
 	     else if(reqpkt->type == XACTO_COMMIT_PKT){
@@ -194,9 +174,9 @@ void *xacto_client_service(void *arg){
 		Free(reqpkt); //this is the end of the while loop, we free everything
 		Free(reppkt);
 		Free(datapkt);
-		Free(datap);
-		Free(datak);
-		Free(datav);
+		// Free(datap);
+		// Free(datak);
+		// Free(datav);
 		noNeedToFree = 1;
 		
 
@@ -206,9 +186,7 @@ void *xacto_client_service(void *arg){
 			Free(reqpkt);
 			Free(reppkt);
 			Free(datapkt);
-			Free(datap);
-			Free(datak);
-			Free(datav);
+			
 		}
 		
 

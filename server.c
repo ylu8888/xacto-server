@@ -107,7 +107,7 @@ void *xacto_client_service(void *arg){
 		        debug("%zu", sizeof(*valBlob));
 		     }
 
-		     BLOB* newVal = blob_create(valBlob->content, sizeof(*valBlob));
+		     BLOB* newVal = blob_create(valBlob->content, sizeof(valBlob->content));
 
 		     //debug("makking it here??");
 		     

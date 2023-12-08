@@ -8,8 +8,8 @@ int proto_send_packet(int fd, XACTO_PACKET *pkt, void *data){
   if(writeRez < 0) return -1; //error handler
 
   //if length of header is not zero, call write again to write payload data to network connection
-  if(data != NULL && ntohl(pkt->size) != 0){
-    int writeRes = rio_writen(fd, data, ntohl(pkt->size)); 
+  if(data != NULL && htonl(pkt->size) != 0){
+    int writeRes = rio_writen(fd, data, htonl(pkt->size)); 
 
     if(writeRes < 0) return -1;
   }
@@ -18,7 +18,7 @@ int proto_send_packet(int fd, XACTO_PACKET *pkt, void *data){
 }
 
 int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
- // debug("made it here");
+  //debug("IM IN PROTO RECV");
   int readRez = rio_readn(fd, pkt, sizeof(XACTO_PACKET));
   if(readRez < 0) return -1;
 
@@ -34,6 +34,8 @@ int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
   } else{
     datap = NULL;
   }
+
+  //debug("IM FINISHED WITH PROTO RECV");
 
   return 0;
   

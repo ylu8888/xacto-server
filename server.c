@@ -103,8 +103,15 @@ void *xacto_client_service(void *arg){
 		     BLOB* valBlob = NULL; //valBlob is a BLOB for getting the VALUE
 		     TRANS_STATUS gstat = store_get(trans, tempKey, &valBlob);  //the value from store_get is stored inside of valBlob
 
-		     BLOB* newVal = blob_create(valBlob->content, strlen(valBlob->content));
-		     
+		     BLOB* newVal;
+		     if(valBlob != NULL){
+		     	
+		     	newVal = blob_create(valBlob->content, strlen(valBlob->content));
+		     } 
+		     else{
+		     	debug("trying to get a NONEXISTENT key");
+		     }
+
 		     //use proto_send_pkt for REPLY after key and value
 		     //make a xacto packet with type reply
 		     reppkt->type = XACTO_REPLY_PKT; //initialize the xacto packet struct for REPLY
@@ -119,7 +126,8 @@ void *xacto_client_service(void *arg){
 		     datapkt->type = XACTO_VALUE_PKT;
 		     datapkt->status = gstat; 
 		     datapkt->serial = reqpkt->serial;
-		     if(valBlob->content == NULL){
+
+		     if(valBlob == NULL){
 			datapkt->null = 1;
 			datapkt->size = 0;
 		     } else{
@@ -129,17 +137,20 @@ void *xacto_client_service(void *arg){
 		     
 		     datapkt->timestamp_sec = 0;
 		     datapkt->timestamp_nsec = 0;
-		     
+
 		    //WE SEND IN TWO PACKETS: REPLY AND DATA PCKET
 		     //for the third argument void* data: send in NULL for the reply and value Blob for the data
 		     //we want to send in the VALUE from GET in the packet, which is stored in newVal
-
-		     //  void* datax = NULL; 
+	
 		     if(proto_send_packet(connfd, reppkt, NULL) == -1)break; //send after making REPLY packet
 		     
-		     //  if(proto_send_packet(connfd, datapkt, valBlob->content) == -1)
-		     if(proto_send_packet(connfd, datapkt, newVal->content) == -1)break; //send after making REPLY packet
-
+		     if(valBlob == NULL){
+		     	if(proto_send_packet(connfd, datapkt, NULL) == -1)break; //send after making REPLY packet
+		     }
+		     else{
+		     	if(proto_send_packet(connfd, datapkt, newVal->content) == -1)break; //send after making REPLY packet
+		     }
+		    
 		     if(gstat == TRANS_ABORTED){ //if abort or commit, break but if pending, thats good!
 			trans_abort(trans); //effects of an aborted trans are removed from the 
 			break;
@@ -170,16 +181,13 @@ void *xacto_client_service(void *arg){
 		break; //once we commit, we're done we want to break out of the infinite while loop
 	     }
 
-	    //debug("im reaching the FREEEEEE");
+	
 		Free(reqpkt); //this is the end of the while loop, we free everything
 		Free(reppkt);
 		Free(datapkt);
-		// Free(datap);
-		// Free(datak);
-		// Free(datav);
+	
 		noNeedToFree = 1;
 		
-
 	} //actual end of while 
 		
 		if(noNeedToFree == 0){ //this is to prevent DOUBLE frees

@@ -98,16 +98,16 @@ void *xacto_client_service(void *arg){
 		     
 		     debug("after storeget");
 		     
-		     if(valBlob == NULL){
-		     	debug("I AM NULLLL");
-		     	break;
-		     } else{
-		     	debug("I AM NOT NULLLL");
-		     	debug("%s", valBlob->content);
-		        debug("%zu", sizeof(*valBlob));
-		     }
+		     // if(valBlob == NULL){
+		     // 	debug("I AM NULLLL");
+		     // 	break;
+		     // } else{
+		     // 	debug("I AM NOT NULLLL");
+		     // 	debug("%s", valBlob->content);
+		     //    debug("%zu", sizeof(*valBlob));
+		     // }
 
-		     BLOB* newVal = blob_create(valBlob->content, sizeof(valBlob->content));
+		     BLOB* newVal = blob_create(valBlob->content, strlen(valBlob->content));
 
 		     //debug("makking it here??");
 		     
@@ -131,7 +131,7 @@ void *xacto_client_service(void *arg){
 			datapkt->size = 0;
 		     } else{
 			datapkt->null = 0;
-			datapkt->size = sizeof(*valBlob);
+			datapkt->size = ntohl(strlen(valBlob->content));
 		     }
 		     
 		     datapkt->timestamp_sec = 0;
@@ -140,12 +140,14 @@ void *xacto_client_service(void *arg){
 		    //WE SEND IN TWO PACKETS: REPLY AND DATA PCKET
 		     //for the third argument void* data: send in NULL for the reply and value Blob for the data
 		     //we want to send in the VALUE from GET in the packet, which is stored in newVal
+		     debug("This is the datapacket size");
+		     debug("%d", datapkt->size);
 
 		     //  void* datax = NULL; 
 		     proto_send_packet(connfd, reppkt, NULL); //send after making REPLY packet
 		     
 		     //  if(proto_send_packet(connfd, datapkt, valBlob->content) == -1)
-		     proto_send_packet(connfd, datapkt, newVal); //send after making REPLY packet
+		     proto_send_packet(connfd, datapkt, newVal->content); //send after making REPLY packet
 
 		    // debug("DAMMM I MADE IT FAR");	
 

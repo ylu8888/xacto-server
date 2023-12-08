@@ -6,26 +6,33 @@
 #include <pthread.h>
 
 BLOB *blob_create(char *content, size_t size){
-	BLOB *blob = malloc(sizeof(BLOB));
+	BLOB *blob = (BLOB*)Malloc(sizeof(BLOB));
 	if(blob == NULL) return NULL;
 
-	//blob->content = strdup(content);//allocate the size of the content
-	blob->content = malloc(size + 1);
+	blob->content = strdup(content);//allocate the size of the content
+	blob->content = Malloc(size + 1);
 	if(blob->content == NULL) return NULL;
-	blob->content = memcpy(blob->content, content, size);
+	memcpy(blob->content, content, size);
 	blob->content[size] = '\0';
 	
-	blob->size = size;
+	blob->size = strlen(blob->content);
 	blob->refcnt = 1; //reference count initially is 1
 
-	blob->prefix = malloc(size);
-	blob->prefix = memcpy(blob->prefix, content, size/2);
+	blob->prefix = Malloc(1);
+	blob->prefix[0] = '\0';
+
+	// blob->prefix = Malloc(size + 1);
+	// if(blob->prefix == NULL) return NULL;
+	// memcpy(blob->prefix, content, size);
+	// blob->prefix[size] = '\0';
+
+	//blob->prefix = content;
 
 	int initRes = pthread_mutex_init(&blob->mutex, NULL); //initialize mutex
 	if(initRes != 0){ //error
-		free(blob->content);
-		free(blob->prefix);
-		free(blob);
+		Free(blob->content);
+		//free(blob->prefix);
+		Free(blob);
 		return NULL;
 	}
 
@@ -49,9 +56,9 @@ void blob_unref(BLOB *bp, char *why){
 		bp->refcnt--;
 		if(bp->refcnt == 0){
 			pthread_mutex_unlock(&bp->mutex);
-			free(bp->content);
-			free(bp->prefix);
-			free(bp);
+			Free(bp->content);
+			//Free(bp->prefix);
+			Free(bp);
 		} else{
 			pthread_mutex_unlock(&bp->mutex);
 		}
@@ -82,7 +89,7 @@ int blob_hash(BLOB *bp){
 }
 
 KEY *key_create(BLOB *bp){
-	KEY *key = malloc(sizeof(KEY));
+	KEY *key = Malloc(sizeof(KEY));
 	if(key == NULL) return NULL;
 
 	key->blob = blob_ref(bp, "Key created from blob and inherits caller ref");
@@ -124,9 +131,6 @@ VERSION *version_create(TRANSACTION *tp, BLOB *bp){
 void version_dispose(VERSION *vp){
 	trans_unref(vp->creator, "Disposing a version");
 	blob_unref(vp->blob, "Disposing a version");
-	free(vp);
+	Free(vp);
 
 }
-
-//fuser (port #)/tcp
-//kill -SIGHUP 4761 

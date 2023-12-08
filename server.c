@@ -19,6 +19,10 @@ void *xacto_client_service(void *arg){
 
 	TRANSACTION *trans = trans_create();
 
+	void *datap; //reads the SERIAL #
+     void *datak; //reads the KEY
+     void *datav; //reads the VALUE
+
 	if(trans == NULL){
 	     Close(connfd);
 	     return NULL;
@@ -34,9 +38,9 @@ void *xacto_client_service(void *arg){
 		memset(reppkt, 0, sizeof(XACTO_PACKET));
 		memset(datapkt, 0, sizeof(XACTO_PACKET));
 	     
-	     void *datap; //reads the SERIAL #
-	     void *datak; //reads the KEY
-	     void *datav; //reads the VALUE
+	     datap = NULL; //reads the SERIAL #
+	     datak = NULL; //reads the KEY
+	     datav = NULL; //reads the VALUE
 
 	     //this gets the serial num, stored in datap
 	     proto_recv_packet(connfd, reqpkt, &datap);
@@ -68,16 +72,16 @@ void *xacto_client_service(void *arg){
 		     reppkt->timestamp_sec = 0;
 		     reppkt->timestamp_nsec = 0;
 
-		     void* datas = NULL;
-		     proto_send_packet(connfd, reppkt, datas); //send after making REPLY packet
+		     //void* datas = NULL;
+		     proto_send_packet(connfd, reppkt, NULL); //send after making REPLY packet
 
 		     if(tstat == TRANS_ABORTED){ //if abort or commit, break but if pending, thats good!
 			trans_abort(trans); //effects of an aborted trans are removed from the 
 			break;
 		     }
 		     
-		     // key_dispose(tempKey);
-		     // blob_unref(blobVal2, "DISPOSAL OF BLOB");
+		      //key_dispose(tempKey);
+		      //blob_unref(blobVal2, "DISPOSAL OF BLOB");
 
 	     }
 	     else if(reqpkt->type == XACTO_GET_PKT){
@@ -150,8 +154,9 @@ void *xacto_client_service(void *arg){
 			break;
 		     }
 
+
 		     // debug("ITS OVERRRR");
-		     // key_dispose(tempKey);
+		      //key_dispose(tempKey);
 		     // blob_unref(newVal, "DISPOSAL OF BLOB");
 		     
 		   
@@ -178,6 +183,7 @@ void *xacto_client_service(void *arg){
 		   break;
 		}
 
+
 		break; //once we commit, we're done we want to break out of the infinite while loop
 	     }
 
@@ -185,6 +191,10 @@ void *xacto_client_service(void *arg){
 		Free(reqpkt);
 		Free(datapkt);
 		Free(reppkt);
+		Free(datap);
+		Free(datak);
+		Free(datav);
+
 	}
 
 	creg_unregister(client_registry, connfd);

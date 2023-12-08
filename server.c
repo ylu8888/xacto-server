@@ -179,15 +179,16 @@ void *xacto_client_service(void *arg){
 		   break;
 		}
 
-		break; //once we commit, we're done we want to break out of the infinite while loop
-	     }
-
-		//this is the end of the while loop
 		Free(reqpkt);
 		Free(reppkt);
 		Free(datap);
 
-	}
+		break; //once we commit, we're done we want to break out of the infinite while loop
+	     }
+
+		//this is the end of the while loop
+
+	} //actual end of while 
 
 	creg_unregister(client_registry, connfd);
 	//trans_unref(trans, "Terminating client service thread");

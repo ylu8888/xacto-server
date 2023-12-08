@@ -17,17 +17,7 @@ static void terminate(int status);
 
 CLIENT_REGISTRY *client_registry;
 
-static void sighup_handler(int signum){
-     terminate(EXIT_SUCCESS);
-}
-
-void *xacto_client_service(void *vargp){
- int connfd = *((int *)vargp);
- Pthread_detach(pthread_self());
- Free(vargp);
- Close(connfd);
- return NULL;
-}
+void sighup_handler(int signum);
 
 int main(int argc, char* argv[]){
     // Option processing should be performed here.
@@ -72,6 +62,10 @@ int listenfd, *connfdp;
         "before the Xacto server will function.\n");
 
     terminate(EXIT_FAILURE);
+}
+
+static void sighup_handler(int signum){
+     terminate(EXIT_SUCCESS);
 }
 
 /*

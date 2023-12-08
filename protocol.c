@@ -21,6 +21,7 @@ int proto_recv_packet(int fd, XACTO_PACKET *pkt, void **datap){
   //debug("IM IN PROTO RECV");
   int readRez = rio_readn(fd, pkt, sizeof(XACTO_PACKET));
   if(readRez < 0) return -1;
+  if(readRez != sizeof(XACTO_PACKET)) return -1;
 
   if(ntohl(pkt->size) != 0){
     *datap = Malloc(ntohl(pkt->size)); //only malloc if pktsize is not 0

@@ -39,15 +39,19 @@ void *xacto_client_service(void *arg){
 	XACTO_PACKET *reppkt; //reply packet
 	XACTO_PACKET *datapkt; //data packet
 
+	int noNeedToFree = 0;
+
 	for(;;){
 
-		reqpkt = Calloc(1, sizeof(XACTO_PACKET)); //request packet
-		reppkt = Calloc(1, sizeof(XACTO_PACKET)); //reply packet
-		datapkt = Calloc(1, sizeof(XACTO_PACKET)); //data packet
+		noNeedToFree = 0;
 
-		// memset(reqpkt, 0, sizeof(XACTO_PACKET));
-		// memset(reppkt, 0, sizeof(XACTO_PACKET));
-		// memset(datapkt, 0, sizeof(XACTO_PACKET));
+		reqpkt = Malloc(sizeof(XACTO_PACKET)); //request packet
+		reppkt = Malloc(sizeof(XACTO_PACKET)); //reply packet
+		datapkt = Malloc(sizeof(XACTO_PACKET)); //data packet
+
+		memset(reqpkt, 0, sizeof(XACTO_PACKET));
+		memset(reppkt, 0, sizeof(XACTO_PACKET));
+		memset(datapkt, 0, sizeof(XACTO_PACKET));
 
 		// XACTO_PACKET *reqpkt = Calloc(1, sizeof(XACTO_PACKET)); //request packet
 		// XACTO_PACKET *reppkt = Calloc(1, sizeof(XACTO_PACKET)); //reply packet
@@ -183,33 +187,30 @@ void *xacto_client_service(void *arg){
 		   break;
 		}
 
-		Free(reqpkt);
-		Free(reppkt);
-		Free(datapkt);
-		Free(datap);
-		Free(datak);
-		Free(datav);
-
 		break; //once we commit, we're done we want to break out of the infinite while loop
 	     }
 
-	     debug("im reaching the FREEEEEE");
-		Free(reqpkt);
+	    //debug("im reaching the FREEEEEE");
+		Free(reqpkt); //this is the end of the while loop, we free everything
 		Free(reppkt);
 		Free(datapkt);
 		Free(datap);
 		Free(datak);
 		Free(datav);
-
-		//this is the end of the while loop
+		noNeedToFree = 1;
+		
 
 	} //actual end of while 
-	Free(reqpkt);
-		Free(reppkt);
-		Free(datapkt);
-		Free(datap);
-		Free(datak);
-		Free(datav);
+		
+		if(noNeedToFree == 0){ //this is to prevent DOUBLE frees
+			Free(reqpkt);
+			Free(reppkt);
+			Free(datapkt);
+			Free(datap);
+			Free(datak);
+			Free(datav);
+		}
+		
 
 	creg_unregister(client_registry, connfd);
 	//trans_unref(trans, "Terminating client service thread");

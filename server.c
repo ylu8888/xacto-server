@@ -31,19 +31,23 @@ void *xacto_client_service(void *arg){
 	     return NULL;
 	}
 
-	void *datap; //reads the SERIAL #
-    void *datak; //reads the KEY
-    void *datav; //reads the VALUE
+        void *datap; //reads the SERIAL #
+        void *datak; //reads the KEY
+        void *datav; //reads the VALUE
+
+	XACTO_PACKET *reqpkt; //request packet
+	XACTO_PACKET *reppkt; //reply packet
+	XACTO_PACKET *datapkt; //data packet
 
 	for(;;){
 
-		XACTO_PACKET *reqpkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //request packet
-		XACTO_PACKET *reppkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //reply packet
-		XACTO_PACKET *datapkt = (XACTO_PACKET *)Malloc(sizeof(XACTO_PACKET)); //data packet
+		reqpkt = Calloc(1, sizeof(XACTO_PACKET)); //request packet
+		reppkt = Calloc(1, sizeof(XACTO_PACKET)); //reply packet
+		datapkt = Calloc(1, sizeof(XACTO_PACKET)); //data packet
 
-		memset(reqpkt, 0, sizeof(XACTO_PACKET));
-		memset(reppkt, 0, sizeof(XACTO_PACKET));
-		memset(datapkt, 0, sizeof(XACTO_PACKET));
+		// memset(reqpkt, 0, sizeof(XACTO_PACKET));
+		// memset(reppkt, 0, sizeof(XACTO_PACKET));
+		// memset(datapkt, 0, sizeof(XACTO_PACKET));
 
 		// XACTO_PACKET *reqpkt = Calloc(1, sizeof(XACTO_PACKET)); //request packet
 		// XACTO_PACKET *reppkt = Calloc(1, sizeof(XACTO_PACKET)); //reply packet
@@ -92,11 +96,11 @@ void *xacto_client_service(void *arg){
 		     }
 		      //key_dispose(tempKey);
 		      //blob_unref(blobVal2, "DISPOSAL OF BLOB");
-		        Free(reqpkt);
-			Free(reppkt);
-			Free(datap);
-			Free(datak);
-			Free(datav);
+		        // Free(reqpkt);
+			// Free(reppkt);
+			// Free(datap);
+			// Free(datak);
+			// Free(datav);
 	     }
 	     else if(reqpkt->type == XACTO_GET_PKT){
 		     if(proto_recv_packet(connfd, reqpkt, &datak) == -1) break;   //this gets the KEY, stored in datak
@@ -151,11 +155,11 @@ void *xacto_client_service(void *arg){
 		     }
 		      //key_dispose(tempKey);
 		     // blob_unref(newVal, "DISPOSAL OF BLOB");
-		    Free(reqpkt);
-	            Free(reppkt);
-		    Free(datapkt);
-		    Free(datap);
-		    Free(datak);
+		    // Free(reqpkt);
+	            // Free(reppkt);
+		    // Free(datapkt);
+		    // Free(datap);
+		    // Free(datak);
 		     
 	     }
 	     else if(reqpkt->type == XACTO_COMMIT_PKT){
@@ -181,10 +185,19 @@ void *xacto_client_service(void *arg){
 
 		Free(reqpkt);
 		Free(reppkt);
+		Free(datapkt);
 		Free(datap);
+		Free(datak);
+		Free(datav);
 
 		break; //once we commit, we're done we want to break out of the infinite while loop
 	     }
+		Free(reqpkt);
+		Free(reppkt);
+		Free(datapkt);
+		Free(datap);
+		Free(datak);
+		Free(datav);
 
 		//this is the end of the while loop
 

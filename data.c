@@ -13,21 +13,9 @@ BLOB *blob_create(char *content, size_t size){
 	if(blob->content == NULL) return NULL;
 	memcpy(blob->content, content, size);
 	blob->content[size] = '\0';
-
-	// blob->content = strdup(content);
-	// blob->content[size] = '\0';
 	
 	blob->size = strlen(blob->content);
-	//blob->size = size;
 	blob->refcnt = 1; //reference count initially is 1
-
-	// blob->prefix = Malloc(1);
-	// blob->prefix[0] = '\0';
-
-	// blob->prefix = Malloc(size + 1);
-	// if(blob->prefix == NULL) return NULL;
-	// memcpy(blob->prefix, content, size);
-	// blob->prefix[size] = '\0';
 
 	blob->prefix = blob->content;
 

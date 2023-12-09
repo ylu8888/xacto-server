@@ -10,14 +10,6 @@
 
 CLIENT_REGISTRY *client_registry;
 
-// void *xacto_client_service(void *arg){
-//  int connfd = *((int *)arg);
-//  Pthread_detach(pthread_self());
-//  Free(arg);
-//  Close(connfd);
-//  return NULL;
-// }
-
 void *xacto_client_service(void *arg){
 	int connfd = *((int *)arg);
 	Pthread_detach(pthread_self());
@@ -56,6 +48,7 @@ void *xacto_client_service(void *arg){
 	     datap = NULL; //reads the SERIAL #
 	     datak = NULL; //reads the KEY
 	     datav = NULL; //reads the VALUE
+	     
 
 	     //this gets the serial num, stored in datap
 	     if(proto_recv_packet(connfd, reqpkt, &datap) == -1) break;
@@ -64,12 +57,14 @@ void *xacto_client_service(void *arg){
 		    //this gets the KEY, stored in datak
 		     if(proto_recv_packet(connfd, reqpkt, &datak) == -1) break;
 
-		     //this gets the VALUE, stored in datav
-		     if(proto_recv_packet(connfd, reqpkt, &datav) == -1) break;
-
 		   // create blob with a size(ntohl) and datak ptr
+		     debug("THIS IS THE REQPKT SIZE");
+		     debug("%d", ntohl(reqpkt->size));
 		     BLOB* blobVal = blob_create(datak, ntohl(reqpkt->size));
 		     KEY* tempKey = key_create(blobVal);
+
+		     //this gets the VALUE, stored in datav
+		     if(proto_recv_packet(connfd, reqpkt, &datav) == -1) break;
 		 
 		     //CREATE another blob with the datav ptr
 		     BLOB* blobVal2 = blob_create(datav, ntohl(reqpkt->size)); //BLOBVAL2 IS FOR THE VALUE
